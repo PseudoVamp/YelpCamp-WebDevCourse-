@@ -4,8 +4,21 @@ const express = require("express");
 //lets you directly attatch paths to the app, (if being accessed from outside the app folder)
 const path = require("path");
 
+//is a middleware? that lets you fake a put/patch request on html forms by sending as POST but its really a put/patch
+//it has to be called app.use below in the app to work
+const methodOverride = require("method-override");
+
 //requires the campground model we build to use in this file
 const Campground = require("./models/campground");
+
+//requires ejs-mate package
+const ejsMate = require("ejs-mate");
+
+//requires middleware morgan
+const morgan = require("morgan");
+
+//calls express to be used in this app
+const app = express();
 
 //requires mongoose and connects it to the local mongoDB for us to use
 const mongoose = require("mongoose");
@@ -26,15 +39,20 @@ db.once("open", () => {
   console.log("Database connected");
 });
 
-//calls express to be used in this app
-const app = express();
-
+//tells the app to use ejs-mate, tells this app how to make use of some of our ejs commants
+app.engine("ejs", ejsMate);
 //sets you to use ejs and attatches the folder for all of the .ejs files
 app.set("view engine", "ejs");
 app.set("views", path.join((__dirname, "views")));
 
-//used to parse the req.body form when creating a new campground. The form sends nothing unless you tell it HOW to send information
+//tells the app to use urlencoded (middleware) to parse the req.body inbetween requests and sent it back in a particular way we can use
 app.use(express.urlencoded({ extended: true }));
+
+//tells the app to use methodOverride inbetween requests, middleware
+app.use(methodOverride("_method"));
+
+//tells the app to use morgan inbetween requests, middleware
+app.use(morgan("tiny"));
 
 // "/" is the home page url
 app.get("/", (req, res) => {
@@ -67,6 +85,29 @@ app.get("/campgrounds/:id", async (req, res) => {
   res.render("campgrounds/show.ejs", { campground });
 });
 
+//renders an edit page with the form pre filled with which campground you want to edit
+app.get("/campgrounds/:id/edit", async (req, res) => {
+  const campground = await Campground.findById(req.params.id);
+  res.render("campgrounds/edit", { campground });
+});
+//uses methodOverride to do a .put route (its called a POST on the form though, trickery being done)
+app.put("/campgrounds/:id", async (req, res) => {
+  //destructured the req.params to grab just the id
+  const { id } = req.params;
+  //spread operator to take the entire req.body.campground object, and spread it into the Campground.findby... object
+  const campground = await Campground.findByIdAndUpdate(id, {
+    ...req.body.campground,
+  });
+  res.redirect(`/campgrounds/${campground._id}`);
+});
+
+//links to the button "delete campground" to send a delete request (really a post but changed with method)
+app.delete("/campgrounds/:id", async (req, res) => {
+  const { id } = req.params;
+  await Campground.findByIdAndDelete(id);
+  res.redirect("/campgrounds");
+});
+
 //used to create one  instance of a campground to start off our database and see if its working
 // app.get("/makecampground", async (req, res) => {
 //   const camp = new Campground({
@@ -76,6 +117,10 @@ app.get("/campgrounds/:id", async (req, res) => {
 //   await camp.save();
 //   res.send(camp);
 // });
+
+app.use((req, res) => {
+  res.status(404).send("Not Found =(");
+});
 
 //lets you use node for the server
 app.listen(3000, () => {
