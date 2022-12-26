@@ -7,7 +7,8 @@ const Schema = mongoose.Schema;
 //basic schema for out mongoDB
 const CampgroundSchema = new Schema({
   title: String,
-  price: String,
+  image: String,
+  price: Number,
   description: String,
   location: String,
 });
