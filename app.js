@@ -21,7 +21,8 @@ const ejsMate = require("ejs-mate");
 const catchAsync = require("./utils/catchAsync");
 
 //requires our custum schema for validating form submissions using Joi
-const { campgroundSchema } = require("./schemas.js");
+//for both creating campgrounds, and reviews on campgrounds
+const { campgroundSchema, reviewSchema } = require("./schemas.js");
 
 //requires error class to use, logs out error messages and stuff
 const ExpressError = require("./utils/ExpressError");
@@ -67,6 +68,31 @@ app.use(methodOverride("_method"));
 //tells the app to use morgan inbetween requests, middleware
 app.use(morgan("tiny"));
 
+//custom middleware schema to help validate the campground submissions on the back end with mongoose
+//you call this by putting validateCampground as an argument
+const validateCampground = (req, res, next) => {
+  const { error } = campgroundSchema.validate(req.body);
+  //if there is an error, map over error.details to get a single string error
+  //pass the error along to the new Express error to be viewed
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+};
+
+//another custom middleware like above to help validate the review forms if submitted through postman
+const validateReview = (req, res, next) => {
+  const { error } = reviewSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+};
+
 // "/" is the home page url
 app.get("/", (req, res) => {
   res.render("home.ejs");
@@ -85,20 +111,6 @@ app.get(
 app.get("/campgrounds/new", (req, res) => {
   res.render("campgrounds/new.ejs");
 });
-
-//custom middleware schema to help validate the campground submissions on the back end with mongoose
-//you call this by putting validateCampground as an argument
-const validateCampground = (req, res, next) => {
-  const { error } = campgroundSchema.validate(req.body);
-  //if there is an error, map over error.details to get a single string error
-  //pass the error along to the new Express error to be viewed
-  if (error) {
-    const msg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(msg, 400);
-  } else {
-    next();
-  }
-};
 
 //goes with the new page, this takes the new pages submission and creates a new campground
 app.post(
@@ -122,7 +134,10 @@ app.get(
   "/campgrounds/:id",
   catchAsync(async (req, res) => {
     //req.params takes the link you clicked, gets its _id, and then renders that show page
-    const campground = await Campground.findById(req.params.id);
+    //the .populate, expands the object ids under campground so they can be used on this page
+    const campground = await Campground.findById(req.params.id).populate(
+      "reviews"
+    );
     res.render("campgrounds/show.ejs", { campground });
   })
 );
@@ -160,10 +175,28 @@ app.delete(
   })
 );
 
+//is the route that handles adding a new review to each campground
 app.post(
   "/campgrounds/:id/reviews",
+  validateReview,
   catchAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id);
+    const review = new Review(req.body.review);
+    campground.reviews.push(review);
+    await review.save();
+    await campground.save();
+    res.redirect(`/campgrounds/${campground._id}`);
+  })
+);
+
+app.delete(
+  "/campgrounds/:id/reviews/:reviewId",
+  catchAsync(async (req, res) => {
+    const { id, reviewId } = req.params;
+    //pull is an operator in mongo, removes from an existing array all the instances of a value that match a specified condition
+    await Campground.findByIdAndUpdate(id, { $pull: { reviews: reviewId } });
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/${id}`);
   })
 );
 
