@@ -11,6 +11,14 @@ const CampgroundSchema = new Schema({
   price: Number,
   description: String,
   location: String,
+  //this is the storage for the reviews that are created. They are saved in an array
+  //and the way it saves is just an objectId that is the mongo Id for that particular review
+  reviews: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Review",
+    },
+  ],
 });
 
 //exports this model to be used in other files (have to import it in those files)
