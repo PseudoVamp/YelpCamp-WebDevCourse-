@@ -1,6 +1,9 @@
 //requires mongoose for this file
 const mongoose = require("mongoose");
 
+//used to grab the reviews so you can delete them
+const Review = require("./review");
+
 //is a shortcut for later so we can just call Schema.somethingHere.somethingElse. instead of writing mongoose.Schema
 const Schema = mongoose.Schema;
 
@@ -19,6 +22,20 @@ const CampgroundSchema = new Schema({
       ref: "Review",
     },
   ],
+});
+
+//mongoose middleware for deleting campgrounds, also deletes the reviews associated with the campground
+//findOneAndDelete is the way mongoose handles deleting from the other call of findByIdAndDelete from our app.delete route
+//so to write middleware you have to find which method is really "called" on the docs
+CampgroundSchema.post("findOneAndDelete", async function (doc) {
+  if (doc) {
+    //queries the document to see all of the reviews in it(the document is the specific campground)
+    await Review.deleteMany({
+      _id: {
+        $in: doc.reviews,
+      },
+    });
+  }
 });
 
 //exports this model to be used in other files (have to import it in those files)
