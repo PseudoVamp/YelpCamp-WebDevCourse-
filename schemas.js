@@ -1,7 +1,7 @@
 //Joi is an error handling middleware, joi.dev
 const Joi = require("joi");
 
-//joi is a validation for using things like postman (serverside), making these things required
+//joi is a validation for things like postman (serverside), making these things required
 //this shorthand creates and exports it for use in one go
 module.exports.campgroundSchema = Joi.object({
   campground: Joi.object({

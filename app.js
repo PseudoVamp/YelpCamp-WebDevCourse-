@@ -14,12 +14,20 @@ const Campground = require("./models/campground");
 //requires the review model that attatches the reviews to each campground
 const Review = require("./models/review");
 
+//requires the user model that creates NEW users (uses passport)
+const User = require("./models/user");
+
 //all the routes are put into seperate files below
-const campgrounds = require("./routes/campgrounds");
-const reviews = require("./routes/reviews");
+const campgroundRoutes = require("./routes/campgrounds");
+const reviewRoutes = require("./routes/reviews");
+const userRoutes = require("./routes/users");
 
 //requires ejs-mate package
 const ejsMate = require("ejs-mate");
+
+//passport = password manager for other logins (google/fb), the local version is what we are currently using, stored locally?!?!?
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
 
 //requires session, which is used to save a tiny or fake database about the user, ex:view count
 //gives req a new method. req.session.
@@ -74,6 +82,7 @@ app.use(methodOverride("_method"));
 //tells express there is a folder named public to serve our static assets from, requires
 app.use(express.static(path.join(__dirname, "public")));
 
+//sets up our session cookie for tracking if still logged in and stuff
 const sessionConfig = {
   secret: "thisshouldbeabettersecret!",
   //old settings?!?!?!?
@@ -86,8 +95,26 @@ const sessionConfig = {
   },
 };
 
+//tells the app to use session, and passes in our configuration for the cookie from above
 app.use(session(sessionConfig));
+//tells the app to use flash (the little success or failure messages that flash up)
 app.use(flash());
+
+//tells this app to use passport as a login manager thing
+app.use(passport.initialize());
+//middleware to use persistent login sessions (cookie related??), so you dont have to login on every request to a verified page
+//use passport.session AFTER using regular old session
+app.use(passport.session());
+
+//tells passport to use the LocalStrategy that we have downloaded and required
+//and for the LocalStrategy, the authentication method is located on our user model, and its called authenticate
+//authenticate comes from passport, it is a built in static method
+passport.use(new LocalStrategy(User.authenticate()));
+
+//how to store a user in the "session" and how to take them out
+//two other "addons" that have been added from passport-local-mongoose
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 //tells the app to use morgan inbetween requests, middleware
 app.use(morgan("tiny"));
@@ -101,8 +128,9 @@ app.use((req, res, next) => {
 });
 
 //route handlers - tells the app to use the seperate route files, depending on which url is asked for
-app.use("/campgrounds", campgrounds);
-app.use("/campgrounds/:id/reviews", reviews);
+app.use("/", userRoutes);
+app.use("/campgrounds", campgroundRoutes);
+app.use("/campgrounds/:id/reviews", reviewRoutes);
 
 // "/" is the home page url
 app.get("/", (req, res) => {
