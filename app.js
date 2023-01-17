@@ -111,7 +111,7 @@ app.use(passport.session());
 //authenticate comes from passport, it is a built in static method
 passport.use(new LocalStrategy(User.authenticate()));
 
-//how to store a user in the "session" and how to take them out
+//how to store a user in the "session" and how to take them out (keeps people "logged in")
 //two other "addons" that have been added from passport-local-mongoose
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());

@@ -14,6 +14,9 @@ const Campground = require("../models/campground");
 //for both creating campgrounds, and reviews on campgrounds
 const { campgroundSchema } = require("../schemas.js");
 
+//custom defined middleware in the middleware.js file for authenticating logged in or not
+const { isLoggedIn } = require("../middleware");
+
 //custom middleware schema to help validate the campground submissions on the back end with mongoose
 //you call this by putting validateCampground as an argument
 const validateCampground = (req, res, next) => {
@@ -38,13 +41,14 @@ router.get(
 );
 
 //renders the new campground page (this new must come before the id search, order matters, if it was below it would treat "new" as an id)
-router.get("/new", (req, res) => {
+router.get("/new", isLoggedIn, (req, res) => {
   res.render("campgrounds/new.ejs");
 });
 
 //goes with the new page, this takes the new pages submission and creates a new campground
 router.post(
   "/",
+  isLoggedIn,
   validateCampground,
   catchAsync(async (req, res, next) => {
     //if no campground is submitted, throw an error, for things like postman
@@ -81,6 +85,7 @@ router.get(
 //renders an edit page with the form pre filled with which campground you want to edit
 router.get(
   "/:id/edit",
+  isLoggedIn,
   catchAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id);
     if (!campground) {
@@ -93,6 +98,7 @@ router.get(
 //uses methodOverride to do a .put route (its called a POST on the form though, trickery being done)
 router.put(
   "/:id",
+  isLoggedIn,
   validateCampground,
   catchAsync(async (req, res) => {
     //destructured the req.params to grab just the id
@@ -109,6 +115,7 @@ router.put(
 //links to the button "delete campground" to send a delete request (really a post but changed with method)
 router.delete(
   "/:id",
+  isLoggedIn,
   catchAsync(async (req, res) => {
     const { id } = req.params;
     await Campground.findByIdAndDelete(id);
