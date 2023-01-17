@@ -121,9 +121,11 @@ app.use(morgan("tiny"));
 
 //middleware used BEFORE route handlers to give us access to flash messages in every route
 app.use((req, res, next) => {
+  //can be used to display a popup success or error message, under the key of flash
   res.locals.success = req.flash("success");
-  //can be used to display any errors that pop up, under the key of flash
   res.locals.error = req.flash("error");
+  //(passport adds user onto req.) , then we put it here to give us access on every template to see the current user
+  res.locals.currentUser = req.user;
   next();
 });
 
