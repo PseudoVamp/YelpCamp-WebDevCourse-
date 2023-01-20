@@ -7,6 +7,11 @@ const Schema = mongoose.Schema;
 const reviewSchema = new Schema({
   body: String,
   rating: Number,
+  //sets the author variable in all reviews to be the perso who created it
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
 });
 
 //exports this review model to be used in other files

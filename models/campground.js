@@ -15,6 +15,12 @@ const CampgroundSchema = new Schema({
   price: Number,
   description: String,
   location: String,
+  //storage type for the author of a specific campsite, look below for more info
+  //for this into to show up, you have to "populate" mongoose?/o?
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
   //this is the storage for the reviews that are created. They are saved in an array
   //and the way it saves is just an objectId that is the mongo Id for that particular review
   reviews: [
