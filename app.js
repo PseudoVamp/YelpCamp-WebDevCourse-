@@ -1,3 +1,10 @@
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+
+//comes from the .env file to store environment variables you want to keep secret
+console.log(process.env.SECRET);
+
 //requires express
 const express = require("express");
 
@@ -9,7 +16,7 @@ const path = require("path");
 const methodOverride = require("method-override");
 
 //requires the campground model to build new campgrounds
-const Campground = require("./models/campground");
+const Campground = require("./models/campground.js");
 
 //requires the review model that attatches the reviews to each campground
 const Review = require("./models/review");
