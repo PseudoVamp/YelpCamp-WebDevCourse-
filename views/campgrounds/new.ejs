@@ -3,7 +3,14 @@
 <div class="row">
   <h1 class="text-center">New Campground</h1>
   <div class="col-6 offset-3">
-    <form action="/campgrounds" method="POST" novalidate class="validated-form">
+    <!-- enctype is an image uploading data type -->
+    <form
+      action="/campgrounds"
+      method="POST"
+      novalidate
+      class="validated-form"
+      enctype="multipart/form-data"
+    >
       <div class="mb-3">
         <label class="form-label" for="title">Title:</label>
         <input
@@ -16,7 +23,9 @@
         <div class="valid-feedback">Looks Good!</div>
       </div>
 
-      <div class="mb-3">
+      <!-- <input type="file" name="image" multiple /> -->
+
+      <!-- <div class="mb-3">
         <label class="form-label" for="image">Image Url</label>
         <input
           class="form-control"
@@ -26,20 +35,20 @@
           required
         />
         <div class="valid-feedback">Looks Good!</div>
-      </div>
+      </div> -->
       <div class="mb-3">
         <label class="form-label" for="location">Location:</label>
         <input
           class="form-control"
           id="location"
           type="text"
-          name="campground[location]]"
+          name="campground[location]"
           required
         />
         <div class="valid-feedback">Looks Good!</div>
       </div>
       <div class="mb-3">
-        <label class="form-label" for="price">Campground Price</label>
+        <label class="form-label" for="price">Price Per Night:</label>
         <div class="input-group">
           <span class="input-group-text" id="price-label">$</span>
           <input
@@ -57,7 +66,18 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label" for="descriptions">Description</label>
+        <label for="image" class="form-label">Upload Images:</label>
+        <input
+          name="image"
+          class="form-control"
+          type="file"
+          id="image"
+          multiple
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="descriptions">Description:</label>
         <textarea
           class="form-control"
           id="descriptions"

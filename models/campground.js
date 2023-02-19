@@ -8,10 +8,31 @@ const Review = require("./review");
 //is a shortcut for later so we can just call Schema.somethingHere.somethingElse. instead of writing mongoose.Schema
 const Schema = mongoose.Schema;
 
+//this schema is nested inside of campgroundSchema, as an array, so we can call things on it seperately
+const ImageSchema = new Schema({ url: String, filename: String });
+
+//this virtual lets you use a thumbnail version of our images by using cloudinarys lingo
+ImageSchema.virtual("thumbnail").get(function () {
+  return this.url.replace("/upload", "/upload/w_200");
+});
+
 //basic schema for out mongoDB
 const CampgroundSchema = new Schema({
   title: String,
-  image: String,
+  images: [ImageSchema],
+
+  geometry: {
+    type: {
+      type: String,
+      enum: ["Point"],
+      required: true,
+    },
+    coordinates: {
+      type: [Number],
+      required: true,
+    },
+  },
+
   price: Number,
   description: String,
   location: String,

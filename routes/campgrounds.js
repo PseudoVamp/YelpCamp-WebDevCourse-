@@ -13,6 +13,14 @@ const campgrounds = require("../controllers/campgrounds");
 //custom defined middleware in the middleware.js file for authenticating logged in or not
 const { isLoggedIn, isAuthor, validateCampground } = require("../middleware");
 
+//multer middleware adds a body and file/s object to the request object
+const multer = require("multer");
+//requires the storage variable we made to tell cloudinary how to store things - for multer to use
+const { storage } = require("../cloudinary/index");
+//sets the destination for multer to put the files
+const upload = multer({ storage });
+//upload.single and upload.array middleware will parse the form and store the files
+
 //one router.route can handle all the different type of requests under one method, by chanining on .post .get ect
 router
   .route("/")
@@ -21,6 +29,7 @@ router
   //goes with the new page, this takes the new pages submission and creates a new campground
   .post(
     isLoggedIn,
+    upload.array("image"),
     validateCampground,
     catchAsync(campgrounds.createCampground)
   );
@@ -37,6 +46,7 @@ router
   .put(
     isLoggedIn,
     isAuthor,
+    upload.array("image"),
     validateCampground,
     catchAsync(campgrounds.updateCampground)
   )
