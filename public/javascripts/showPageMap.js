@@ -6,4 +6,12 @@ const map = new mapboxgl.Map({
   zoom: 10, // starting zoom
 });
 
-new mapboxgl.Marker().setLngLat(campground.geometry.coordinates).addTo(map);
+//coordinates for the map location per campground, also changes the marker when you click on it.
+new mapboxgl.Marker()
+  .setLngLat(campground.geometry.coordinates)
+  .setPopup(
+    new mapboxgl.Popup({ offset: 25 }).setHTML(
+      `<h3>${campground.title}</h3><p>${campground.location}</p>`
+    )
+  )
+  .addTo(map);
