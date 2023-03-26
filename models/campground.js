@@ -16,40 +16,51 @@ ImageSchema.virtual("thumbnail").get(function () {
   return this.url.replace("/upload", "/upload/w_200");
 });
 
+//have to set this option for the "virtuals" you make to show up in the javascript in the browser
+const opts = { toJSON: { virtuals: true } };
+
 //basic schema for out mongoDB
-const CampgroundSchema = new Schema({
-  title: String,
-  images: [ImageSchema],
+const CampgroundSchema = new Schema(
+  {
+    title: String,
+    images: [ImageSchema],
 
-  geometry: {
-    type: {
-      type: String,
-      enum: ["Point"],
-      required: true,
+    geometry: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
     },
-    coordinates: {
-      type: [Number],
-      required: true,
-    },
-  },
 
-  price: Number,
-  description: String,
-  location: String,
-  //storage type for the author of a specific campsite, look below for more info
-  //for this into to show up, you have to "populate" mongoose?/o?
-  author: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
-  //this is the storage for the reviews that are created. They are saved in an array
-  //and the way it saves is just an objectId that is the mongo Id for that particular review
-  reviews: [
-    {
+    price: Number,
+    description: String,
+    location: String,
+    //storage type for the author of a specific campsite, look below for more info
+    //for this into to show up, you have to "populate" mongoose?/o?
+    author: {
       type: Schema.Types.ObjectId,
-      ref: "Review",
+      ref: "User",
     },
-  ],
+    //this is the storage for the reviews that are created. They are saved in an array
+    //and the way it saves is just an objectId that is the mongo Id for that particular review
+    reviews: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Review",
+      },
+    ],
+  },
+  opts
+);
+
+//this virtual makes properties in the geojson for the popup text when clicking on a campground on the cluster map
+CampgroundSchema.virtual("properties.popUpMarkup").get(function () {
+  return `<strong><a href="/campgrounds/${this._id}">${this.title}</a></strong>`;
 });
 
 //mongoose middleware for deleting campgrounds, also deletes the reviews associated with the campground
