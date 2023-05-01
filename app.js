@@ -24,6 +24,9 @@ const Review = require("./models/review");
 //requires the user model that creates NEW users (uses passport)
 const User = require("./models/user");
 
+//mongo sanitizer for query strings, so they cant be injected with any extra commands
+const mongoSanitize = require("express-mongo-sanitize");
+
 //all the routes are put into seperate files below
 const campgroundRoutes = require("./routes/campgrounds");
 const reviewRoutes = require("./routes/reviews");
@@ -88,6 +91,9 @@ app.use(methodOverride("_method"));
 
 //tells express there is a folder named public to serve our static assets from, requires
 app.use(express.static(path.join(__dirname, "public")));
+
+//tells mongoSanitize to be used for this app
+app.use(mongoSanitize());
 
 //sets up our session cookie for tracking if still logged in and stuff
 const sessionConfig = {
