@@ -24,6 +24,9 @@ const Review = require("./models/review");
 //requires the user model that creates NEW users (uses passport)
 const User = require("./models/user");
 
+//helmet middleware, composed of 11 different middleware for security
+const helmet = require("helmet");
+
 //mongo sanitizer for query strings, so they cant be injected with any extra commands
 const mongoSanitize = require("express-mongo-sanitize");
 
@@ -97,12 +100,15 @@ app.use(mongoSanitize());
 
 //sets up our session cookie for tracking if still logged in and stuff
 const sessionConfig = {
+  name: "session",
   secret: "thisshouldbeabettersecret!",
   //old settings?!?!?!?
   resave: false,
   saveUninitialized: true,
   cookie: {
     httpOnly: true,
+    //will make sure this only loads over httpS
+    // secure:true,
     expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
     maxAge: 1000 * 60 * 60 * 24 * 7,
   },
@@ -112,6 +118,55 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 //tells the app to use flash (the little success or failure messages that flash up)
 app.use(flash());
+
+//enables the 11 middleware with helmet
+app.use(helmet());
+
+//custom made for this site so helmets "content-security-policy" doesn't block every outside source from loading
+const scriptSrcUrls = [
+  "https://stackpath.bootstrapcdn.com/",
+  "https://api.tiles.mapbox.com/",
+  "https://api.mapbox.com/",
+  "https://kit.fontawesome.com/",
+  "https://cdnjs.cloudflare.com/",
+  "https://cdn.jsdelivr.net",
+];
+const styleSrcUrls = [
+  "https://kit-free.fontawesome.com/",
+  "https://stackpath.bootstrapcdn.com/",
+  "https://api.mapbox.com/",
+  "https://api.tiles.mapbox.com/",
+  "https://fonts.googleapis.com/",
+  "https://use.fontawesome.com/",
+  "https://cdn.jsdelivr.net",
+];
+const connectSrcUrls = [
+  "https://api.mapbox.com/",
+  "https://a.tiles.mapbox.com/",
+  "https://b.tiles.mapbox.com/",
+  "https://events.mapbox.com/",
+];
+const fontSrcUrls = [];
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: [],
+      connectSrc: ["'self'", ...connectSrcUrls],
+      scriptSrc: ["'unsafe-inline'", "'self'", ...scriptSrcUrls],
+      styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
+      workerSrc: ["'self'", "blob:"],
+      objectSrc: [],
+      imgSrc: [
+        "'self'",
+        "blob:",
+        "data:",
+        "https://res.cloudinary.com/dijsqclbt/", //SHOULD MATCH YOUR CLOUDINARY ACCOUNT!
+        "https://images.unsplash.com/",
+      ],
+      fontSrc: ["'self'", ...fontSrcUrls],
+    },
+  })
+);
 
 //tells this app to use passport as a login manager thing
 app.use(passport.initialize());
