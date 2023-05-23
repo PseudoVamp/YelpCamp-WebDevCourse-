@@ -94,7 +94,7 @@ db.once("open", () => {
 app.engine("ejs", ejsMate);
 //sets you to use ejs and attatches the folder for all of the .ejs files
 app.set("view engine", "ejs");
-app.set("views", path.join((__dirname, "views")));
+app.set("views", path.join(__dirname, "views"));
 
 //tells the app to use urlencoded (middleware) to parse the req.body inbetween requests and sent it back in a particular way we can use
 app.use(express.urlencoded({ extended: true }));
@@ -227,7 +227,7 @@ app.use("/campgrounds/:id/reviews", reviewRoutes);
 
 // "/" is the home page url
 app.get("/", (req, res) => {
-  res.render("views/home.ejs");
+  res.render("home.ejs");
 });
 
 //used to create one  instance of a campground to start off our database and see if its working
@@ -252,7 +252,7 @@ app.use((err, req, res, next) => {
   const { statusCode = 500 } = err;
   //if there isn't an error message, this is set to the default one
   if (!err.message) err.message = "Oh No, Something Went Wrong!";
-  res.status(statusCode).render("views/error", { err });
+  res.status(statusCode).render("error", { err });
 });
 
 //lets you use node for the server
