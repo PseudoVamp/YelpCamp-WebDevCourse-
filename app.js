@@ -2,9 +2,6 @@ if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
 
-//comes from the .env file to store environment variables you want to keep secret
-console.log(process.env.SECRET);
-
 //requires express
 const express = require("express");
 
@@ -38,7 +35,10 @@ const userRoutes = require("./routes/users");
 //required for connect-mongo (online use of mongo)
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-const dbUrl = "mongodb://localhost:27017/yelp-camp";
+const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/yelp-camp";
+
+//comes from the .env file to store environment variables you want to keep secret
+const secret = process.env.SECRET || "thisshouldbeabettersecret!";
 
 //requires ejs-mate package
 const ejsMate = require("ejs-mate");
@@ -110,7 +110,7 @@ const store = MongoStore.create({
   mongoUrl: dbUrl,
   touchAfter: 24 * 60 * 60,
   crypto: {
-    secret: "thisshouldbeabettersecret!",
+    secret,
   },
 });
 
@@ -122,7 +122,7 @@ store.on("error", function (e) {
 const sessionConfig = {
   store,
   name: "session",
-  secret: "thisshouldbeabettersecret!",
+  secret,
   //old settings?!?!?!?
   resave: false,
   saveUninitialized: true,
