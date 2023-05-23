@@ -35,6 +35,11 @@ const campgroundRoutes = require("./routes/campgrounds");
 const reviewRoutes = require("./routes/reviews");
 const userRoutes = require("./routes/users");
 
+//required for connect-mongo (online use of mongo)
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
+const dbUrl = "mongodb://localhost:27017/yelp-camp";
+
 //requires ejs-mate package
 const ejsMate = require("ejs-mate");
 
@@ -42,9 +47,11 @@ const ejsMate = require("ejs-mate");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 
+//OLD probably not needed anymore???
 //requires session, which is used to save a tiny or fake database about the user, ex:view count
 //gives req a new method. req.session.
-const sessions = require("express-session");
+// const sessions = require("express-session");
+
 //flash lets you write something ONCE to a user. "OK logged in!"
 const flash = require("connect-flash");
 
@@ -60,9 +67,10 @@ const app = express();
 //requires mongoose and connects it to the local mongoDB for us to use
 const mongoose = require("mongoose");
 const { runInNewContext } = require("vm");
-const session = require("express-session");
+3;
 const { date } = require("joi");
-mongoose.connect("mongodb://localhost:27017/yelp-camp", {
+
+mongoose.connect(dbUrl, {
   //a few settings for mongo so it doesnt yell at us (***look into these***)
   useNewUrlParser: true,
   //this was throwing an error?!? investigate -------------------------------------------------
@@ -98,8 +106,21 @@ app.use(express.static(path.join(__dirname, "public")));
 //tells mongoSanitize to be used for this app
 app.use(mongoSanitize());
 
+const store = MongoStore.create({
+  mongoUrl: dbUrl,
+  touchAfter: 24 * 60 * 60,
+  crypto: {
+    secret: "thisshouldbeabettersecret!",
+  },
+});
+
+store.on("error", function (e) {
+  console.log("session store error", e);
+});
+
 //sets up our session cookie for tracking if still logged in and stuff
 const sessionConfig = {
+  store,
   name: "session",
   secret: "thisshouldbeabettersecret!",
   //old settings?!?!?!?
