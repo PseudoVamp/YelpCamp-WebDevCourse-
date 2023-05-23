@@ -1,7 +1,3 @@
-if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
-}
-
 //requires express
 const express = require("express");
 
