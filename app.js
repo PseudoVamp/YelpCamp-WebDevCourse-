@@ -252,7 +252,8 @@ app.use((err, req, res, next) => {
   const { statusCode = 500 } = err;
   //if there isn't an error message, this is set to the default one
   if (!err.message) err.message = "Oh No, Something Went Wrong";
-  res.status(statusCode).render("/views/error.ejs", { err });
+  res.status(statusCode);
+  res.render("error.ejs", { err });
 });
 
 //lets you use node for the server
