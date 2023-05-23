@@ -18,7 +18,7 @@ const Campground = require("./models/campground.js");
 //requires the review model that attatches the reviews to each campground
 const Review = require("./models/review");
 
-//requires the user model that creates NEW users (uses passport)
+//requires the user model that creates NEW use frs (uses passport)
 const User = require("./models/user");
 
 //helmet middleware, composed of 11 different middleware for security
@@ -252,7 +252,7 @@ app.use((err, req, res, next) => {
   const { statusCode = 500 } = err;
   //if there isn't an error message, this is set to the default one
   if (!err.message) err.message = "Oh No, Something Went Wrong";
-  res.status(statusCode).render("error.ejs", { err });
+  res.status(statusCode).render("error", { err });
   res.send("oh boy something went wrong....");
 });
 
