@@ -70,6 +70,8 @@ const { runInNewContext } = require("vm");
 3;
 const { date } = require("joi");
 
+mongoose.set("strictQuery", true);
+
 mongoose.connect(dbUrl, {
   //a few settings for mongo so it doesnt yell at us (***look into these***)
   useNewUrlParser: true,
