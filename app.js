@@ -246,14 +246,14 @@ app.all("*", (req, res, next) => {
   next(new ExpressError("Page not found!", 404));
 });
 
-//generic error handler middleware
-app.use((err, req, res, next) => {
-  //destructures the error to take out statusCode, and asigns default status code
-  const { statusCode = 500 } = err;
-  //if there isn't an error message, this is set to the default one
-  if (!err.message) err.message = "Oh No, Something Went Wrong!";
-  res.status(statusCode).render("error", { err });
-});
+// //generic error handler middleware
+// app.use((err, req, res, next) => {
+//   //destructures the error to take out statusCode, and asigns default status code
+//   const { statusCode = 500 } = err;
+//   //if there isn't an error message, this is set to the default one
+//   if (!err.message) err.message = "Oh No, Something Went Wrong!";
+//   res.status(statusCode).render("error", { err });
+// });
 
 //lets you use node for the server
 app.listen(3000, () => {
